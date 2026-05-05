@@ -11,8 +11,8 @@ from pathlib import Path
 
 import numpy as np
 import onnxruntime as ort
-from onnxruntime.quantization import quantize_dynamic, QuantType
-from transformers import AutoFeatureExtractor
+from onnxruntime.quantization import quantize_dynamic, QuantType, shape_inference
+from transformers import AutoImageProcessor
 from PIL import Image
 
 
@@ -48,15 +48,26 @@ def main():
         return
 
     # ─── Quantize ───────────────────────────────────────────
-    print(f"  กำลัง quantize: {ONNX_PATH}")
+    PREPROCESSED_PATH = Path("./models/onnx/model_preprocessed.onnx") # เพิ่มไฟล์ทางผ่าน
+
+    print(f"  กำลังทำ Pre-processing จัดระเบียบ Shape: {ONNX_PATH}")
+    shape_inference.quant_pre_process(
+        input_model_path=str(ONNX_PATH),
+        output_model_path=str(PREPROCESSED_PATH),
+        skip_optimization=False
+    )
+
+    print(f"  กำลัง quantize: {PREPROCESSED_PATH}")
     print(f"  บันทึกไปที่   : {QUANTIZED_PATH}")
     print()
 
     t0 = time.perf_counter()
     quantize_dynamic(
-        model_input=str(ONNX_PATH),
+        model_input=str(PREPROCESSED_PATH), # เปลี่ยนมาใช้ไฟล์ที่ pre-process แล้ว
         model_output=str(QUANTIZED_PATH),
-        weight_type=QuantType.QUInt8,  # unsigned INT8 ทำงานเร็วกว่าบน CPU ส่วนใหญ่
+        weight_type=QuantType.QUInt8,
+        # บังคับให้ใช้ external data ถ้าโมเดลมีขนาดใหญ่และแยก weight ไว้
+        use_external_data_format=True 
     )
     t1 = time.perf_counter()
     print(f"  Quantization เสร็จใน {(t1 - t0):.2f} วินาที")
@@ -75,7 +86,7 @@ def main():
     # ─── Quantized Inference ────────────────────────────────
     print()
     print("  สร้าง Quantized Runtime session...")
-    extractor = AutoFeatureExtractor.from_pretrained(MODEL_DIR)
+    extractor = AutoImageProcessor.from_pretrained(MODEL_DIR)
     image = get_test_image()
     inputs = extractor(images=image, return_tensors="pt")
     input_array = inputs["pixel_values"].numpy()

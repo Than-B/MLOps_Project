@@ -11,7 +11,7 @@ from pathlib import Path
 import torch
 import onnxruntime as ort
 from PIL import Image
-from transformers import AutoFeatureExtractor, AutoModelForImageClassification
+from transformers import AutoImageProcessor, AutoModelForImageClassification
 
 
 # ─── Config ───────────────────────────────────────────────
@@ -43,7 +43,7 @@ def main():
 
     # โหลด PyTorch model
     print("  โหลด PyTorch model จาก local...")
-    extractor = AutoFeatureExtractor.from_pretrained(MODEL_DIR)
+    extractor = AutoImageProcessor.from_pretrained(MODEL_DIR)
     model = AutoModelForImageClassification.from_pretrained(MODEL_DIR)
     model.eval()
     id2label = model.config.id2label
@@ -53,24 +53,38 @@ def main():
     inputs = extractor(images=image, return_tensors="pt")
     dummy_input = inputs["pixel_values"]  # shape: (1, 3, 224, 224)
 
+    class ONNXWrapper(torch.nn.Module):
+        def __init__(self, base_model):
+            super().__init__()
+            self.base_model = base_model
+            
+        def forward(self, pixel_values):
+            # ปล่อยให้โมเดลรันปกติ แล้วเราดึงมาแค่ .logits โยนให้ ONNX
+            return self.base_model(pixel_values).logits
+
+    # เอาโมเดลเดิมมาใส่กล่อง Wrapper
+    wrapped_model = ONNXWrapper(model)
+    wrapped_model.eval()
+
     # ─── Export to ONNX ─────────────────────────────────────
     print(f"  กำลัง export ไปที่: {ONNX_PATH}")
     t_export_start = time.perf_counter()
 
     with torch.no_grad():
         torch.onnx.export(
-            model,
+            wrapped_model,
             dummy_input,
             str(ONNX_PATH),
             export_params=True,
-            opset_version=14,          # ใช้ 14 รองรับ ops ใหม่กว่า
-            do_constant_folding=True,  # optimize constant ใน graph
+            opset_version=18,          # แนะนำให้เปลี่ยนเป็น 18 ตามที่ Log เคยแจ้งเตือนครับ
+            do_constant_folding=True,
             input_names=["pixel_values"],
             output_names=["logits"],
-            dynamic_axes={
-                "pixel_values": {0: "batch_size"},
-                "logits":       {0: "batch_size"},
-            },
+            # 👉 คอมเมนต์ 4 บรรทัดนี้ทิ้งไปเลยครับ
+            # dynamic_axes={
+            #     "pixel_values": {0: "batch_size"},
+            #     "logits":       {0: "batch_size"},
+            # },
         )
 
     t_export_end = time.perf_counter()

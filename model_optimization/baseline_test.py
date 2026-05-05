@@ -11,7 +11,7 @@ from pathlib import Path
 
 import torch
 from PIL import Image
-from transformers import AutoFeatureExtractor, AutoModelForImageClassification
+from transformers import AutoImageProcessor, AutoModelForImageClassification
 import requests
 from io import BytesIO
 
@@ -53,7 +53,7 @@ def main():
 
     # โหลด Feature Extractor + Model
     print("  กำลังโหลด feature extractor...")
-    extractor = AutoFeatureExtractor.from_pretrained(MODEL_NAME)
+    extractor = AutoImageProcessor.from_pretrained(MODEL_NAME)
     extractor.save_pretrained(MODEL_DIR)
 
     print("  กำลังโหลดโมเดล (อาจใช้เวลาสักครู่)...")
