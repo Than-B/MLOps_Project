@@ -3,7 +3,7 @@ name: MLOps CI/CD Pipeline
 # ทำงานทุกครั้งที่มีการ Push โค้ดเข้า branch main
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main" , "kj" ]
 
 jobs:
   test-and-deploy:
@@ -45,4 +45,4 @@ jobs:
         git remote add space https://<your-username>:$HF_TOKEN@huggingface.co/spaces/<your-username>/<your-space-name>
         
         # บังคับ Push โค้ดทั้งหมดขึ้นไปที่ Space
-        git push --force space main
+        git push --force space HEAD:main
