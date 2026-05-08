@@ -123,7 +123,7 @@ curl -X POST http://localhost:7860/predict \
 ### Predict (Cloud — Hugging Face Spaces)
 
 ```bash
-curl -X POST https://<YOUR_HF_USERNAME>-<SPACE_NAME>.hf.space/predict \
+curl -X POST https://Than165-MLOps-api.hf.space/predict \
   -F "file=MLOps\image\1.jpg" \
   -H "accept: application/json"
 ```
