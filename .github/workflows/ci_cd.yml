@@ -1,0 +1,98 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+env:
+  HF_SPACE: ${{ secrets.HF_USERNAME }}/${{ secrets.HF_SPACE_NAME }}
+
+jobs:
+  # ─── Job 1: Unit Tests ──────────────────────────────────
+  test:
+    name: Run Unit Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install "numpy==1.26.4"
+          pip install -r api/requirements.txt
+          pip install pytest pytest-asyncio httpx
+
+      - name: Run unit tests
+        run: |
+          pytest tests/ -v --tb=short --junitxml=test-results.xml
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results
+          path: test-results.xml
+
+  # ─── Job 2: Auto-Deploy (เฉพาะ push ไป main เท่านั้น) ──
+  deploy:
+    name: Deploy to Hugging Face Spaces
+    runs-on: ubuntu-latest
+    needs: test          # รอให้ test ผ่าน 100% ก่อน
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # ต้องการ full history สำหรับ git push
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install model optimization dependencies
+        run: |
+          pip install "numpy==1.26.4" torch torchvision transformers \
+                      onnx onnxruntime onnxscript Pillow requests huggingface_hub --quiet
+
+      - name: Download and optimize model
+        run: |
+          python model_optimization/baseline_test.py
+          python model_optimization/convert_onnx.py
+          python model_optimization/quantize.py
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+
+      - name: Push to Hugging Face Spaces
+        run: |
+          git config --global user.email "ci@github.com"
+          git config --global user.name "GitHub Actions"
+
+          # Clone HF Space repo
+          git clone https://${{ secrets.HF_USERNAME }}:${{ secrets.HF_TOKEN }}@huggingface.co/spaces/${{ env.HF_SPACE }} hf_space
+
+          # Copy ไฟล์ที่จำเป็น
+          cp Dockerfile hf_space/
+          cp -r api/ hf_space/api/
+          mkdir -p hf_space/models/onnx
+          cp models/onnx/model_quantized.onnx hf_space/models/onnx/
+
+          # Commit และ push
+          cd hf_space
+          git add .
+          git commit -m "Deploy: $(date +'%Y-%m-%d %H:%M') | commit ${{ github.sha }}" || echo "Nothing to commit"
+          git push
+
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
