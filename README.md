@@ -65,3 +65,15 @@ models/
 │   └── model_quantized.onnx   ← ใช้ใน Production
 └── benchmark_results.json
 ```
+
+---
+title: MLOps Emotion API
+emoji: 🚀
+colorFrom: blue
+colorTo: indigo
+sdk: docker
+pinned: false
+---
+
+# Facial Emotion Detection API
+โปรเจกต์นี้เป็น API สำหรับจำแนกอารมณ์จากใบหน้า...
