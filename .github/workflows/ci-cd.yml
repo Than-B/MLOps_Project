@@ -1,0 +1,48 @@
+name: MLOps CI/CD Pipeline
+
+# ทำงานทุกครั้งที่มีการ Push โค้ดเข้า branch main
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  test-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    # 1. ดึงโค้ดล่าสุดจาก GitHub
+    - name: Checkout Code
+      uses: actions/checkout@v3
+
+    # 2. ติดตั้ง Python
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.11"
+
+    # 3. ติดตั้ง Dependencies และ pytest
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r api/requirements.txt
+        pip install pytest httpx
+
+    # 4. รัน Unit Test (CI)
+    # ถ้าขั้นตอนนี้พัง (เทสไม่ผ่าน) ระบบจะหยุดทำงานทันที ไม่ข้ามไปขั้นตอน Deploy
+    - name: Run Unit Tests with pytest
+      run: |
+        cd api
+        pytest test_main.py -v
+
+    # 5. สั่ง Deploy ขึ้น Hugging Face Spaces (CD) 
+    # จะทำงานต่อเมื่อ Test ผ่าน 100% เท่านั้น
+    - name: Push to Hugging Face Spaces
+      env:
+        HF_TOKEN: ${{ secrets.HF_TOKEN_KJ }}
+      run: |
+        # ตั้งค่า git ให้ชี้ไปที่ Hugging Face Repository ของคุณ
+        # ระวัง: เปลี่ยน <your-username> และ <your-space-name> เป็นชื่อของคุณ
+        git remote add space https://<your-username>:$HF_TOKEN@huggingface.co/spaces/<your-username>/<your-space-name>
+        
+        # บังคับ Push โค้ดทั้งหมดขึ้นไปที่ Space
+        git push --force space main
