@@ -7,3 +7,6 @@ venv/
 docs/
 __pycache__/
 predict/
+image/
+JMeter_Dashboard_cloud/
+JMeter_Dashboard_local/
