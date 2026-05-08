@@ -13,7 +13,9 @@ jobs:
     # 1. ดึงโค้ดล่าสุดจาก GitHub
     - name: Checkout Code
       uses: actions/checkout@v3
-
+      with:
+        fetch-depth: 0  # เพิ่มการบังคับให้ดึงประวัติ Git ทั้งหมด (แก้ Shallow update)
+        lfs: true       # เพิ่มการเปิดระบบ LFS ให้รองรับไฟล์โมเดล ONNX (แก้ lfs-check error)
     # 2. ติดตั้ง Python
     - name: Set up Python 3.11
       uses: actions/setup-python@v4
