@@ -31,7 +31,6 @@ jobs:
     # ถ้าขั้นตอนนี้พัง (เทสไม่ผ่าน) ระบบจะหยุดทำงานทันที ไม่ข้ามไปขั้นตอน Deploy
     - name: Run Unit Tests with pytest
       run: |
-        cd api
         pytest test_main.py -v
 
     # 5. สั่ง Deploy ขึ้น Hugging Face Spaces (CD) 
