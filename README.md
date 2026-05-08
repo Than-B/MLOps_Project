@@ -75,5 +75,5 @@ sdk: docker
 pinned: false
 ---
 
-# Facial Emotion Detection API
-โปรเจกต์นี้เป็น API สำหรับจำแนกอารมณ์จากใบหน้า...
+# Phase 1: Model Optimization
+(เนื้อหาเดิมของคุณต่อลงมาด้านล่าง...)
