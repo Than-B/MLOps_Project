@@ -57,7 +57,11 @@ jobs:
         # 4. แพ็กของและ Commit ใหม่ (จะมีแค่ข้อมูลล่าสุด)
         git branch -M main
         git add .
-        git commit -m "Auto Deploy from GitHub Actions"
+        git add -f models/onnx/model_quantized.onnx
+        git add -f models/onnx/model_quantized.onnx.data
+        git add -f models/original/preprocessor_config.json
+        
+        git commit -m "Auto Deploy from GitHub Actions with ONNX Model"
         
         # 5. ส่งขึ้น Hugging Face (ใช้ตัวแปร $HF_TOKEN)
         git remote add space https://KridtinJeeranggoon:$HF_TOKEN@huggingface.co/spaces/KridtinJeeranggoon/MLOps-Project

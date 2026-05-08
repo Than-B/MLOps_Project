@@ -6,3 +6,4 @@ models/
 venv/
 docs/
 __pycache__/
+predict/
