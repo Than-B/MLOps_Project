@@ -41,9 +41,26 @@ jobs:
       env:
         HF_TOKEN: ${{ secrets.HF_TOKEN_KJ }}
       run: |
-        # ตั้งค่า git ให้ชี้ไปที่ Hugging Face Repository ของคุณ
-        # ระวัง: เปลี่ยน <your-username> และ <your-space-name> เป็นชื่อของคุณ
+        # 1. ลบประวัติ Git เดิมทิ้ง เพื่อทิ้งไฟล์ใหญ่ที่ติดอยู่ในอดีต
+        rm -rf .git
+        
+        # 2. สร้าง Git ใหม่ที่สะอาดหมดจด
+        git init
+        git config user.name "CI/CD Bot"
+        git config user.email "bot@example.com"
+        
+        # 3. สร้างกฎ LFS ใหม่
+        git lfs install
+        git lfs track "*.data"
+        git lfs track "*.onnx"
+        
+        # 4. แพ็กของและ Commit ใหม่ (จะมีแค่ข้อมูลล่าสุด)
+        git branch -M main
+        git add .
+        git commit -m "Auto Deploy from GitHub Actions"
+        
+        # 5. ส่งขึ้น Hugging Face (ใช้ตัวแปร $HF_TOKEN)
         git remote add space https://KridtinJeeranggoon:$HF_TOKEN@huggingface.co/spaces/KridtinJeeranggoon/MLOps-Project
         
-        # บังคับ Push โค้ดทั้งหมดขึ้นไปที่ Space
-        git push --force space HEAD:main
+        # 6. Force Push ทับของเก่าบน HF ไปเลย
+        git push --force space main
