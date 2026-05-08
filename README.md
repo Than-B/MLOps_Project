@@ -1,4 +1,14 @@
+---
+title: MLOps Emotion API
+emoji: 🚀
+colorFrom: blue
+colorTo: indigo
+sdk: docker
+pinned: false
+---
+
 # Phase 1: Model Optimization
+(เนื้อหาเดิมของคุณต่อลงมาด้านล่าง...)
 
 ## โมเดลที่ใช้
 **dima806/facial_emotions_image_detection**  
@@ -65,15 +75,3 @@ models/
 │   └── model_quantized.onnx   ← ใช้ใน Production
 └── benchmark_results.json
 ```
-
----
-title: MLOps Emotion API
-emoji: 🚀
-colorFrom: blue
-colorTo: indigo
-sdk: docker
-pinned: false
----
-
-# Phase 1: Model Optimization
-(เนื้อหาเดิมของคุณต่อลงมาด้านล่าง...)
