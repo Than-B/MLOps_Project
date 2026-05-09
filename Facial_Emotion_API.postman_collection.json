@@ -1,0 +1,240 @@
+{
+  "info": {
+    "_postman_id": "ae11ed15-8d1e-4b3e-b7e9-ccc855133b39",
+    "name": "Facial Emotion API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "42511107"
+  },
+  "item": [
+    {
+      "name": "API Info",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            ""
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Health Check",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status is 200\", () => {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Model is loaded\", () => {\r",
+              "    const json = pm.response.json();\r",
+              "    pm.expect(json.status).to.eql(\"ok\");\r",
+              "    pm.expect(json.model_loaded).to.be.true;\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/health",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "health"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Predict (Image)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status is 200\", () => {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Has all required fields\", () => {\r",
+              "    const json = pm.response.json();\r",
+              "    pm.expect(json).to.have.property(\"predicted_emotion\");\r",
+              "    pm.expect(json).to.have.property(\"confidence\");\r",
+              "    pm.expect(json).to.have.property(\"all_scores\");\r",
+              "    pm.expect(json).to.have.property(\"inference_time_ms\");\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Confidence is between 0 and 1\", () => {\r",
+              "    const json = pm.response.json();\r",
+              "    pm.expect(json.confidence).to.be.within(0, 1);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Emotion label is valid\", () => {\r",
+              "    const json = pm.response.json();\r",
+              "    const valid = [\"angry\",\"disgust\",\"fear\",\"happy\",\"neutral\",\"sad\",\"surprise\"];\r",
+              "    pm.expect(valid).to.include(json.predicted_emotion);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "file",
+              "type": "file",
+              "uuid": "9cbddc37-2116-474d-826d-69aa32f52c63",
+              "src": "postman-cloud:///1f1478cc-628c-4430-9513-8582726c02c8"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{base_url}}/predict",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "predict"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Predict (Empty)",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/predict",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "predict"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Predict (PDF)",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "file",
+              "type": "file",
+              "uuid": "a0d8d53a-9700-4002-8823-bc46c17501d5",
+              "src": "postman-cloud:///1f14b69d-4277-4140-8381-0eb9c97bb659"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{base_url}}/predict",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "predict"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Predict Batch",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "files",
+              "type": "file",
+              "uuid": "f790f552-ee41-4316-bd3d-01f3456fc87c",
+              "src": [
+                "postman-cloud:///1f1478cc-7aa8-4230-9da3-7e6b5c010c40",
+                "postman-cloud:///1f1478cc-951a-4280-8b06-96b3af842a30",
+                "postman-cloud:///1f1478cc-af95-4f10-b514-f40663c8f8d4",
+                "postman-cloud:///1f1478cc-d055-4bb0-976c-625eeca12b3c"
+              ]
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{base_url}}/predict/batch",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "predict",
+            "batch"
+          ]
+        }
+      },
+      "response": []
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url_cloud",
+      "value": ""
+    },
+    {
+      "key": "base_url_local",
+      "value": ""
+    }
+  ]
+}
